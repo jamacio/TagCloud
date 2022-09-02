@@ -6,6 +6,7 @@ import styles from '../styles/Home.module.css'
 import { TagCloud } from 'react-tagcloud'
 
 const data = [
+  { value: 'jamacio teste', count: 300 },
   { value: 'CSS3', count: 220 },
   { value: 'JavaScript', count: 38 },
   { value: 'React', count: 302 },
