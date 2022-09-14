@@ -1,7 +1,6 @@
 import type { NextPage } from 'next'
 import { connectToDatabase } from "../lib/mongodb";
 import { TagCloud } from 'react-tagcloud'
-import type { AppProps } from 'next/app'
 import bodyParser from "body-parser";
 import { promisify } from "util";
 const getBody = promisify(bodyParser.urlencoded({ extended: false }));
@@ -16,7 +15,7 @@ function App({ tags, urlTag }: any) {
   return (
     <div className="w-2/4 mx-auto my-20 text-center">
       <TagCloud
-        minSize={1}
+        minSize={30}
         maxSize={100}
         tags={tags}
         onClick={(tag: { value: any }) => alert(`'${tag.value}' was selected!`)}
@@ -32,6 +31,7 @@ function App({ tags, urlTag }: any) {
 }
 
 export async function getServerSideProps({ req, res }: any) {
+  const collection = "tagWord";
   const { db } = await connectToDatabase();
   const session = await getSession(req, res);
   if (req.method === "POST") {
@@ -41,7 +41,6 @@ export async function getServerSideProps({ req, res }: any) {
     if (refresh) {
       session.url_id = "";
     }
-
   }
 
   const baseUrl = req?.headers?.host + '/tag/';
@@ -50,22 +49,15 @@ export async function getServerSideProps({ req, res }: any) {
   let returnTags: any[] = [];
 
   const tags = await db
-    .collection("tagWord")
+    .collection(collection)
     .find({ "url_id": String(session.url_id) })
     .toArray();
 
-  let count = 1;
   tags.forEach(function (item) {
-
-    if (isValue(returnTags, item.word)) {
-      count++;
-    }
-
     returnTags.push({
       value: item.word,
-      count: count
+      count: ((item?.count) ?? 1)
     });
-
 
   })
 
@@ -76,14 +68,5 @@ export async function getServerSideProps({ req, res }: any) {
     },
   };
 }
-
-function isValue(data: any[], find: any) {
-  const isValue = data.find(function (item: { value: any; }) {
-    return item.value == find;
-  });
-
-  return isValue;
-}
-
 
 export default App

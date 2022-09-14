@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { connectToDatabase } from "../../lib/mongodb";
 import bodyParser from "body-parser";
 import { promisify } from "util";
+import { ObjectId } from "mongodb";
 const getBody = promisify(bodyParser.urlencoded({ extended: false }));
 
 const Tag = () => {
@@ -25,11 +26,11 @@ const Tag = () => {
             </p>
         </div>
     );
-
 }
 
-
 export async function getServerSideProps({ req, res }) {
+    const collection = "tagWord";
+    let response = {};
     if (req.method === "POST") {
         await getBody(req, res);
     }
@@ -44,13 +45,25 @@ export async function getServerSideProps({ req, res }) {
             }
         }
     }
-
     const { db } = await connectToDatabase();
-
-    const response = db.collection("tagWord").insertOne({
-        word,
-        url_id,
-    });
+    const isRepeat = await db.collection(collection).findOne({ word, url_id })
+    if (isRepeat) {
+        const count = parseInt(isRepeat?.count) + 1;
+        await db.collection(collection).updateOne(
+            { _id: ObjectId(isRepeat._id) },
+            {
+                $set: {
+                    count
+                },
+            }
+        );
+    } else {
+        response = await db.collection(collection).insertOne({
+            word,
+            url_id,
+            count: 1
+        });
+    }
 
     return {
         props: {
