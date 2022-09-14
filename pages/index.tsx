@@ -14,7 +14,7 @@ const getSession = nextSession();
 function App({ tags, urlTag }: any) {
 
   return (
-    <div>
+    <div className="w-2/4 mx-auto my-20 text-center">
       <TagCloud
         minSize={20}
         maxSize={50}
