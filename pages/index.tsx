@@ -1,78 +1,88 @@
 import type { NextPage } from 'next'
 import { connectToDatabase } from "../lib/mongodb";
 import { TagCloud } from 'react-tagcloud'
-
-const data = [
-  { value: 'jamacio teste', count: 200 },
-  { value: 'Mauricio teste', count: 500 },
-  { value: 'CSS3', count: 220 },
-  { value: 'JavaScript', count: 38 },
-  { value: 'React', count: 302 },
-  { value: 'Nodejs', count: 28 },
-  { value: 'Express.js', count: 25 },
-  { value: 'HTML5', count: 313 },
-  { value: 'MongoDB', count: 18 },
-
-  { value: 'CSS31', count: 220 },
-  { value: 'JavaScript1', count: 38 },
-  { value: 'React1', count: 302 },
-  { value: 'Nodejs1', count: 28 },
-  { value: 'Express.js1', count: 25 },
-  { value: 'HTML51', count: 313 },
-  { value: 'MongoDB1', count: 18 },
-
-  { value: 'CSS32', count: 220 },
-  { value: 'JavaScript2', count: 38 },
-  { value: 'React2', count: 302 },
-  { value: 'Nodejs2', count: 28 },
-  { value: 'Express.js2', count: 25 },
-  { value: 'HTML52', count: 313 },
-  { value: 'MongoDB2', count: 18 },
-
-  { value: 'CSS33', count: 220 },
-  { value: 'JavaScript3', count: 38 },
-  { value: 'React3', count: 302 },
-  { value: 'Nodejs3', count: 28 },
-  { value: 'Express.js3', count: 25 },
-  { value: 'HTML53', count: 313 },
-  { value: 'MongoDB3', count: 18 },
-]
+import bodyParser from "body-parser";
+import { promisify } from "util";
+const getBody = promisify(bodyParser.urlencoded({ extended: false }));
 
 
-const App: NextPage = ({ tags }) => {
+import nextSession from "next-session";
+const getSession = nextSession();
+
+
+const App: NextPage = ({ tags, urlTag }) => {
+
   return (
     <div>
       <TagCloud
         minSize={20}
         maxSize={50}
-        tags={data}
+        tags={tags}
         onClick={(tag: { value: any }) => alert(`'${tag.value}' was selected!`)}
       />
-      <ul>
-        {tags.map((tag) => (
-          <li className="text-3xl font-bold underline" key={tag._id} >
-            <h2>{tag.word}</h2>
-            <h3>{tag.url_id}</h3>
-          </li>
-        ))}
-      </ul>
+
+      <p>{urlTag}</p>
+
+      <form method="post">
+        <button type="submit" name="refresh" value="1" >Trocar link</button>
+      </form>
     </div>
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ req, res }) {
   const { db } = await connectToDatabase();
+  const session = await getSession(req, res);
+  if (req.method === "POST") {
+    await getBody(req, res);
+    const refresh = req.body?.refresh;
+
+    if (refresh) {
+      session.url_id = "";
+    }
+
+  }
+
+  const baseUrl = req?.headers?.host + '/tag/';
+  const start = Date.now();
+  session.url_id = session.url_id ? session.url_id : start;
+  let returnTags: any[] = [];
 
   const tags = await db
     .collection("tagWord")
-    .find({ "url_id": "jsr" })
+    .find({ "url_id": String(session.url_id)  })
     .toArray();
+
+let count = 10;
+  tags.forEach(function (item) {
+
+    if (isValue(returnTags, item.word)) {
+      count = count + 10;
+    }
+
+    returnTags.push({
+      value: item.word,
+      count: count
+    });
+
+
+  })
 
   return {
     props: {
-      tags: JSON.parse(JSON.stringify(tags)),
+      tags: returnTags,
+      urlTag: baseUrl + session.url_id
     },
   };
 }
+
+function isValue(data: any[], find: any) {
+  const isValue = data.find(function (item: { value: any; }) {
+    return item.value == find;
+  });
+
+  return isValue;
+}
+
 
 export default App
