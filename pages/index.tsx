@@ -1,8 +1,5 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-
+import { connectToDatabase } from "../lib/mongodb";
 import { TagCloud } from 'react-tagcloud'
 
 const data = [
@@ -42,17 +39,40 @@ const data = [
 ]
 
 
-const Home: NextPage = () => {
+const App: NextPage = ({ tags }) => {
   return (
-    <div className="w-2/4 mx-auto my-20 text-center">
+    <div>
       <TagCloud
         minSize={20}
         maxSize={50}
         tags={data}
         onClick={(tag: { value: any }) => alert(`'${tag.value}' was selected!`)}
       />
+      <ul>
+        {tags.map((tag) => (
+          <li className="text-3xl font-bold underline" key={tag._id} >
+            <h2>{tag.word}</h2>
+            <h3>{tag.url_id}</h3>
+          </li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }
 
-export default Home
+export async function getServerSideProps() {
+  const { db } = await connectToDatabase();
+
+  const tags = await db
+    .collection("tagWord")
+    .find({ "url_id": "222" })
+    .toArray();
+
+  return {
+    props: {
+      tags: JSON.parse(JSON.stringify(tags)),
+    },
+  };
+}
+
+export default App
