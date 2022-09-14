@@ -16,8 +16,8 @@ function App({ tags, urlTag }: any) {
   return (
     <div className="w-2/4 mx-auto my-20 text-center">
       <TagCloud
-        minSize={20}
-        maxSize={50}
+        minSize={1}
+        maxSize={100}
         tags={tags}
         onClick={(tag: { value: any }) => alert(`'${tag.value}' was selected!`)}
       />
@@ -25,7 +25,7 @@ function App({ tags, urlTag }: any) {
       <p>{urlTag}</p>
 
       <form method="post">
-        <button type="submit" name="refresh" value="1" >Trocar link</button>
+        <button type="submit" name="refresh" value="1" className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' >Trocar link</button>
       </form>
     </div>
   );
@@ -51,14 +51,14 @@ export async function getServerSideProps({ req, res }: any) {
 
   const tags = await db
     .collection("tagWord")
-    .find({ "url_id": String(session.url_id)  })
+    .find({ "url_id": String(session.url_id) })
     .toArray();
 
-let count = 10;
+  let count = 1;
   tags.forEach(function (item) {
 
     if (isValue(returnTags, item.word)) {
-      count = count + 10;
+      count++;
     }
 
     returnTags.push({
