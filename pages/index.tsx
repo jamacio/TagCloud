@@ -65,7 +65,7 @@ export async function getServerSideProps() {
 
   const tags = await db
     .collection("tagWord")
-    .find({ "url_id": "222" })
+    .find({ "url_id": "jsr" })
     .toArray();
 
   return {
