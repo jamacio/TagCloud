@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
 import { connectToDatabase } from "../lib/mongodb";
 import { TagCloud } from 'react-tagcloud'
+import type { AppProps } from 'next/app'
 import bodyParser from "body-parser";
 import { promisify } from "util";
 const getBody = promisify(bodyParser.urlencoded({ extended: false }));
@@ -10,7 +11,7 @@ import nextSession from "next-session";
 const getSession = nextSession();
 
 
-const App: NextPage = ({ tags, urlTag }) => {
+function App({ tags, urlTag }: any) {
 
   return (
     <div>
@@ -30,7 +31,7 @@ const App: NextPage = ({ tags, urlTag }) => {
   );
 }
 
-export async function getServerSideProps({ req, res }) {
+export async function getServerSideProps({ req, res }: any) {
   const { db } = await connectToDatabase();
   const session = await getSession(req, res);
   if (req.method === "POST") {
