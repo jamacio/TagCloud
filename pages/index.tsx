@@ -24,7 +24,7 @@ function App({ tags, urlTag }: any) {
           <div>
             <div className="relative">
             <p> Copie o link abaixo e envie para sua galera.</p>
-              <input disabled defaultValue={urlTag} className="block p-4 pl-10 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+              <input disabled defaultValue={urlTag} className="block p-4 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
               <button onClick={() => navigator.clipboard.writeText(urlTag)} className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Copiar</button>
             </div>
           </div>
